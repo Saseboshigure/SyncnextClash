@@ -1,0 +1,122 @@
+name: Publish rules
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "rulesets/**"
+      - "tools/**"
+      - "tests/**"
+      - "requirements.lock"
+      - "scripts/install_ci_sing_box.sh"
+      - ".github/workflows/publish-rules.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: syncnext-rule-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.lock
+
+      - name: Install pinned dependencies
+        run: |
+          python -m pip install -r requirements.lock
+          ./scripts/install_ci_sing_box.sh "${RUNNER_TEMP}/bin"
+          echo "${RUNNER_TEMP}/bin" >> "${GITHUB_PATH}"
+
+      - name: Validate and test
+        run: |
+          python tools/rules.py validate
+          python -m unittest discover -s tests -v
+
+      - name: Generate complete publication
+        run: python tools/rules.py generate --output "${RUNNER_TEMP}/generated"
+
+      - name: Reject superseded source run
+        id: source
+        run: |
+          git fetch origin main
+          remote_head="$(git rev-parse origin/main)"
+          if [[ "${remote_head}" != "${GITHUB_SHA}" ]]; then
+            echo "Source commit ${GITHUB_SHA} was superseded by ${remote_head}; a newer workflow will publish it."
+            echo "publish=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          echo "publish=true" >> "${GITHUB_OUTPUT}"
+
+      - name: Preserve legacy Clash URLs on main
+        if: steps.source.outputs.publish == 'true'
+        run: |
+          cp "${RUNNER_TEMP}/generated/proxy-classical.yaml" proxy-classical.yaml
+          cp "${RUNNER_TEMP}/generated/Unbreak-classical.yaml" Unbreak-classical.yaml
+          git add proxy-classical.yaml Unbreak-classical.yaml
+          if git diff --cached --quiet; then
+            echo "Root Clash artifacts are already current."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "🤖 chore(rules): refresh generated Clash rules"
+            git push origin HEAD:main
+          fi
+
+      - name: Verify main did not advance unexpectedly
+        if: steps.source.outputs.publish == 'true'
+        run: |
+          expected_head="$(git rev-parse HEAD)"
+          git fetch origin main
+          remote_head="$(git rev-parse origin/main)"
+          if [[ "${remote_head}" != "${expected_head}" ]]; then
+            echo "main advanced unexpectedly: expected ${expected_head}, got ${remote_head}" >&2
+            exit 1
+          fi
+
+      - name: Publish generated branch
+        if: steps.source.outputs.publish == 'true'
+        run: |
+          publish_dir="${RUNNER_TEMP}/generated-branch"
+          if git ls-remote --exit-code --heads origin generated >/dev/null 2>&1; then
+            git fetch origin generated
+            git worktree add --detach "${publish_dir}" origin/generated
+          else
+            git worktree add --detach "${publish_dir}"
+            git -C "${publish_dir}" switch --orphan generated
+            git -C "${publish_dir}" rm -r --ignore-unmatch .
+          fi
+          git -C "${publish_dir}" config user.name "github-actions[bot]"
+          git -C "${publish_dir}" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "${publish_dir}" rm -r --ignore-unmatch .
+          cp -R "${RUNNER_TEMP}/generated/." "${publish_dir}/"
+          git -C "${publish_dir}" add -A
+          if git -C "${publish_dir}" diff --cached --quiet; then
+            echo "generated branch is already current."
+          else
+            git -C "${publish_dir}" commit -m "Publish rules from ${GITHUB_SHA}"
+            git -C "${publish_dir}" push origin HEAD:generated
+          fi
+
+      - name: Read back published Git objects
+        if: steps.source.outputs.publish == 'true'
+        run: |
+          git fetch origin generated
+          readback_dir="${RUNNER_TEMP}/generated-readback"
+          mkdir -p "${readback_dir}"
+          git archive origin/generated | tar -x -C "${readback_dir}"
+          diff -qr "${RUNNER_TEMP}/generated" "${readback_dir}"

@@ -1,38 +1,40 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
-- `Unbreak-classical.yaml` and `proxy-classical.yaml` are Clash rule lists in YAML format. Each file contains a single `payload:` list with one rule per line.
-- `passwall/` contains plain-text domain lists for Passwall: `direct_host` (direct) and `proxy_host` (proxy). Each line is a domain; `#` starts a comment.
-- `README.md` documents the published raw URLs. Update it if you add or rename rule files.
+## Source of Truth
 
-## Build, Test, and Development Commands
-This repository is data-only; there is no build or runtime.
-- Optional sanity checks:
-  - `rg -n "example.com"` to find duplicates or confirm entries.
-  - `rg -n "^  -" Unbreak-classical.yaml` to confirm YAML rule formatting.
+- `rulesets/proxy.yaml` and `rulesets/unbreak.yaml` are the only maintained rule data.
+- Root Clash files and every file on the `generated` branch are generated artifacts. Never edit them as rule sources.
+- `rulesets/README.md` owns schema version 1 and Passwall expansion semantics.
 
-## Coding Style & Naming Conventions
-- YAML rule files:
-  - Keep `payload:` at the top.
-  - Use two-space indentation and one rule per line, e.g. `  - DOMAIN-SUFFIX,example.com` or `  - IP-CIDR,203.0.113.0/24`.
-  - Group related rules with adjacent blocks; avoid reordering unrelated sections.
-- Passwall lists:
-  - One domain per line; comments start with `#`.
-  - Keep sections grouped under short comment headers (e.g., `#google`).
+## Maintenance Flow
 
-## Testing Guidelines
-- No automated tests are configured.
-- Manually verify syntax by loading updated files into your Clash/Passwall setup and ensuring they parse without errors.
+1. Edit the appropriate canonical file without reordering unrelated rules.
+2. Install exactly the dependency versions in `requirements.lock`.
+3. Run `python tools/rules.py validate` and `python -m unittest discover -s tests -v`.
+4. If sing-box v1.13.15 is available, run `python tools/rules.py generate --output output`.
+5. Open a pull request and inspect the CI preview artifact. Publication happens only after merge to main.
 
-## Commit & Pull Request Guidelines
-- Commit messages follow an emoji + type(scope) pattern (from recent history):
-  - Example: `✨ feat(proxy): add example.com` or `🔧 chore(direct_host): update domains`.
-- PRs should include:
-  - A brief description of why the domain/rule is added.
-  - The affected files and rule type (direct vs proxy).
-  - Source or rationale for the rule (link or short note).
-  - Screenshot not required unless you changed documentation rendering.
+Never add guessed conversion, silent omission, alternate source, legacy merge, or best-effort output. A target that cannot represent a canonical rule must have an explicit representation in the canonical rule or fail validation.
 
-## Configuration Tips
-- Prefer domain-specific rules (`DOMAIN-SUFFIX`, `DOMAIN-KEYWORD`) before broader IP ranges.
-- When adding IP ranges, include the smallest CIDR that satisfies the need.
+## Canonical Style
+
+- Preserve rule order and the spelling/case of existing canonical values.
+- Version 1 supports only `DOMAIN-SUFFIX`, `DOMAIN-KEYWORD`, and IPv4 `IP-CIDR`.
+- A `DOMAIN-KEYWORD` must include a non-empty explicit Passwall representation.
+- Passwall numbered expansion uses exactly one `{n}` placeholder plus inclusive integer `start` and `end`.
+- Keep YAML at two-space indentation and Python at four-space indentation.
+
+## Verification and Publication
+
+- Tests must cover the external generator interface and observable artifacts, not private implementation details.
+- Negative tests must prove malformed or unrepresentable state fails without partial output.
+- GitHub Actions used by workflows must stay pinned to full commit SHAs.
+- `scripts/install_ci_sing_box.sh` pins both sing-box version and release archive SHA-256.
+- PR workflows are read-only. Only the main-branch publication workflow may write root compatibility files or the `generated` branch.
+- Build and test do not authorize manual publication, push, release, or unrelated repository changes.
+
+## Commit and Pull Request Style
+
+- Follow the existing emoji plus conventional type/scope style, for example `✨ feat(rules): add example.com`.
+- Describe the routing intent, canonical rules changed, affected generated formats, and evidence used for any explicit expansion.
+- Preserve unrelated staged, unstaged, and untracked work.

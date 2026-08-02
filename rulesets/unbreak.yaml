@@ -1,0 +1,148 @@
+schema_version: 1
+name: unbreak
+policy: direct
+rules:
+  - type: DOMAIN-SUFFIX
+    value: movie.douban.com
+  - type: DOMAIN-SUFFIX
+    value: mddcloud.com.cn
+  - type: DOMAIN-SUFFIX
+    value: ddys.info
+  - type: DOMAIN-SUFFIX
+    value: ddys.wiki
+  - type: DOMAIN-SUFFIX
+    value: ddys.art
+  - type: DOMAIN-SUFFIX
+    value: zh188.net
+  - type: DOMAIN-SUFFIX
+    value: kczybf.com
+  - type: DOMAIN-SUFFIX
+    value: mixpanel.com
+  - type: DOMAIN-SUFFIX
+    value: appsflyer.com
+  - type: DOMAIN-KEYWORD
+    value: ffzy-play
+    representations:
+      passwall:
+        domains:
+          - ffzy-plays.com
+        numbered_domains:
+          - format: "ffzy-play{n}.com"
+            start: 1
+            end: 20
+  - type: DOMAIN-KEYWORD
+    value: lzcdn
+    representations:
+      passwall:
+        numbered_domains:
+          - format: "lzcdn{n}.com"
+            start: 1
+            end: 50
+  - type: DOMAIN-KEYWORD
+    value: cdnlz
+    representations:
+      passwall:
+        numbered_domains:
+          - format: "cdnlz{n}.com"
+            start: 1
+            end: 25
+  - type: DOMAIN-KEYWORD
+    value: lz-cdn
+    representations:
+      passwall:
+        numbered_domains:
+          - format: "lz-cdn{n}.com"
+            start: 1
+            end: 25
+  - type: DOMAIN-KEYWORD
+    value: vip.ffzy-online
+    representations:
+      passwall:
+        numbered_domains:
+          - format: "ffzy-online{n}.com"
+            start: 1
+            end: 20
+  - type: DOMAIN-KEYWORD
+    value: vip.ffzy-play
+    representations:
+      passwall:
+        domains:
+          - ffzy-plays.com
+        numbered_domains:
+          - format: "ffzy-play{n}.com"
+            start: 1
+            end: 20
+  - type: DOMAIN-KEYWORD
+    value: ffzyread
+    representations:
+      passwall:
+        domains:
+          - ffzyread.com
+        numbered_domains:
+          - format: "ffzyread{n}.com"
+            start: 1
+            end: 5
+  - type: DOMAIN-SUFFIX
+    value: cz.cz01.site
+  - type: DOMAIN-SUFFIX
+    value: czzy88.com
+  - type: DOMAIN-SUFFIX
+    value: czzy22.com
+  - type: DOMAIN-SUFFIX
+    value: czzy66.com
+  - type: DOMAIN-SUFFIX
+    value: czzy89.com
+  - type: DOMAIN-SUFFIX
+    value: cz233.com
+  - type: DOMAIN-SUFFIX
+    value: CZZ9.COM
+  - type: DOMAIN-SUFFIX
+    value: czzy.top
+  - type: DOMAIN-SUFFIX
+    value: czzy.site
+  - type: DOMAIN-SUFFIX
+    value: czzy77.com
+  - type: DOMAIN-SUFFIX
+    value: cz01.tv
+  - type: DOMAIN-SUFFIX
+    value: girigirilove.com
+  - type: IP-CIDR
+    value: 216.180.0.0/16
+  - type: IP-CIDR
+    value: 103.160.204.120/32
+  - type: IP-CIDR
+    value: 138.199.9.104/32
+  - type: DOMAIN-SUFFIX
+    value: wogg.link
+  - type: DOMAIN-SUFFIX
+    value: xxooo.cf
+  - type: DOMAIN-SUFFIX
+    value: wogg.xyz
+  - type: DOMAIN-SUFFIX
+    value: yanetflix.one
+  - type: DOMAIN-SUFFIX
+    value: bfikuncdn.com
+  - type: DOMAIN-SUFFIX
+    value: ikunzyapi.com
+  - type: DOMAIN-SUFFIX
+    value: kkzycdn.com
+  - type: DOMAIN-SUFFIX
+    value: libvio.app
+  - type: DOMAIN-SUFFIX
+    value: libviofabu.com
+  - type: DOMAIN-SUFFIX
+    value: libfabu.com
+  - type: DOMAIN-SUFFIX
+    value: libvio.run
+  - type: DOMAIN-SUFFIX
+    value: libvio.mov
+  - type: DOMAIN-SUFFIX
+    value: libvio.la
+  - type: DOMAIN-SUFFIX
+    value: libhd.com
+  - type: DOMAIN-SUFFIX
+    value: czzymovie.com
+  - type: DOMAIN-SUFFIX
+    value: cz01.org
+  - type: DOMAIN-SUFFIX
+    value: py1080p.com

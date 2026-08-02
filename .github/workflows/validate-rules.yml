@@ -1,0 +1,71 @@
+name: Validate rules
+
+on:
+  pull_request:
+    paths:
+      - "rulesets/**"
+      - "tools/**"
+      - "tests/**"
+      - "requirements.lock"
+      - "scripts/install_ci_sing_box.sh"
+      - ".github/workflows/**"
+      - "proxy-classical.yaml"
+      - "Unbreak-classical.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+
+      - name: Reject manual edits to generated root rules
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          changed="$(git diff --name-only "${BASE_SHA}...${HEAD_SHA}" -- proxy-classical.yaml Unbreak-classical.yaml)"
+          if [[ -n "${changed}" ]]; then
+            echo "Generated root rules must be updated by the publish workflow, not by a pull request:" >&2
+            echo "${changed}" >&2
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.lock
+
+      - name: Install pinned Python dependency
+        run: python -m pip install -r requirements.lock
+
+      - name: Install verified sing-box
+        run: |
+          ./scripts/install_ci_sing_box.sh "${RUNNER_TEMP}/bin"
+          echo "${RUNNER_TEMP}/bin" >> "${GITHUB_PATH}"
+
+      - name: Validate canonical rules
+        run: python tools/rules.py validate
+
+      - name: Run rule tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Generate preview and verify sing-box round trip
+        run: python tools/rules.py generate --output "${RUNNER_TEMP}/generated-preview"
+
+      - name: Upload preview
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: syncnext-rules-preview-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/generated-preview
+          if-no-files-found: error
+          retention-days: 7

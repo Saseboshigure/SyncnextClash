@@ -1,0 +1,6 @@
+schema_version: 1
+name: proxy
+policy: proxy
+rules:
+  - type: DOMAIN-SUFFIX
+    value: proxy.example

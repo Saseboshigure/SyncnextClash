@@ -1,21 +1,90 @@
-# Syncext 專用規則集
+# Syncnext 規則集
 
-### SyncnextUnbreak 中國直連列表
+這個 repository 使用版本化的本地規則協議，同一份 canonical 規則會生成
+Mihomo/Clash、Stash、Surge、Loon、Shadowrocket、Quantumult X、sing-box 和
+Passwall 產物。
 
-https://raw.githubusercontent.com/qoli/SyncnextClash/main/Unbreak-classical.yaml
+請勿直接修改生成檔。規則維護入口只有：
 
-### SyncnextProxy 代理列表
+- [`rulesets/proxy.yaml`](rulesets/proxy.yaml)：應使用代理的規則。
+- [`rulesets/unbreak.yaml`](rulesets/unbreak.yaml)：應直接連線的規則。
 
-https://raw.githubusercontent.com/qoli/SyncnextClash/main/proxy-classical.yaml
+協議和 Passwall 顯式展開格式見 [`rulesets/README.md`](rulesets/README.md)。
 
-raw.githubusercontent.com 地址需要自行尋找可用的國內 GitHub 訪問鏡像。
+## Clash / Mihomo / Stash
 
-## Passwall 專用規則列表（不完整，依然在整理）
+為相容既有使用者，兩個 URL 保持不變：
 
-### 直連列表
+- SyncnextProxy：<https://raw.githubusercontent.com/qoli/SyncnextClash/main/proxy-classical.yaml>
+- SyncnextUnbreak：<https://raw.githubusercontent.com/qoli/SyncnextClash/main/Unbreak-classical.yaml>
 
-https://github.com/qoli/SyncnextClash/blob/main/passwall/direct_host
+兩份檔案均為 `behavior: classical` 的 rule-provider payload。Mihomo/Stash
+使用者在自己的設定內把 SyncnextProxy 綁到代理策略、SyncnextUnbreak 綁到
+`DIRECT`。
 
-### 代理列表
+## 其他 App 產物
 
-https://github.com/qoli/SyncnextClash/blob/main/passwall/proxy_host
+其他生成檔發布於 `generated` 分支：
+
+| App / 核心 | Proxy | Unbreak |
+| --- | --- | --- |
+| Mihomo | [`mihomo/proxy-classical.yaml`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/mihomo/proxy-classical.yaml) | [`mihomo/Unbreak-classical.yaml`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/mihomo/Unbreak-classical.yaml) |
+| Stash | [`stash/proxy-classical.yaml`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/stash/proxy-classical.yaml) | [`stash/Unbreak-classical.yaml`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/stash/Unbreak-classical.yaml) |
+| Surge | [`surge/proxy.list`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/surge/proxy.list) | [`surge/unbreak.list`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/surge/unbreak.list) |
+| Loon | [`loon/proxy.list`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/loon/proxy.list) | [`loon/unbreak.list`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/loon/unbreak.list) |
+| Shadowrocket | [`shadowrocket/proxy.list`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/shadowrocket/proxy.list) | [`shadowrocket/unbreak.list`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/shadowrocket/unbreak.list) |
+| Quantumult X | [`quantumult-x/proxy.list`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/quantumult-x/proxy.list) | [`quantumult-x/unbreak.list`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/quantumult-x/unbreak.list) |
+| sing-box JSON | [`sing-box/proxy.json`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/sing-box/proxy.json) | [`sing-box/unbreak.json`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/sing-box/unbreak.json) |
+| sing-box SRS | [`sing-box/proxy.srs`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/sing-box/proxy.srs) | [`sing-box/unbreak.srs`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/sing-box/unbreak.srs) |
+
+Surge、Loon 和 Shadowrocket 的遠端 rule-set 不含策略名稱，策略由 App 的引用
+設定決定。Quantumult X 產物已分別帶有 `proxy` 和 `direct`，仍可在
+`filter_remote` 使用 `force-policy` 覆蓋。
+
+sing-box 可直接引用 JSON source 或 SRS binary，例如：
+
+```json
+{
+  "type": "remote",
+  "tag": "syncnext-proxy",
+  "format": "binary",
+  "url": "https://raw.githubusercontent.com/qoli/SyncnextClash/generated/sing-box/proxy.srs"
+}
+```
+
+## Passwall
+
+Passwall 的 domain 與 IP 必須分別匯入：
+
+- [`proxy_host`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/passwall/proxy_host)
+- [`proxy_ip`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/passwall/proxy_ip)
+- [`direct_host`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/passwall/direct_host)
+- [`direct_ip`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/passwall/direct_ip)
+
+舊 `main/passwall/*` 手工清單已停止使用；其中只存在於 Passwall、未存在於兩份
+原 Clash 權威檔案的歷史規則沒有遷入新協議。
+
+## 本地維護
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.lock
+.venv/bin/python tools/rules.py validate
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python tools/rules.py generate --output output
+```
+
+完整生成需要 PATH 中存在準確的 `sing-box v1.13.15`；版本缺失或不符會直接
+失敗。`check-generated` 可檢查 main 根目錄的兩份相容產物：
+
+```bash
+.venv/bin/python tools/rules.py check-generated
+```
+
+Pull request CI 會驗證協議、測試所有 adapter 並上傳 preview。合併至 main 後，
+發布 workflow 會更新兩份相容 Clash 檔並發布完整 `generated` 分支。
+
+目前 proprietary App 產物已通過格式與 golden tests，尚未逐 App 完成人工匯入
+驗證。每次發布的來源 commit、規則數和 SHA-256 可在
+[`manifest.json`](https://raw.githubusercontent.com/qoli/SyncnextClash/generated/manifest.json)
+核對。

@@ -1,0 +1,18 @@
+schema_version: 1
+name: unbreak
+policy: direct
+rules:
+  - type: DOMAIN-SUFFIX
+    value: direct.example
+  - type: DOMAIN-KEYWORD
+    value: cdn
+    representations:
+      passwall:
+        domains:
+          - cdn-special.example
+        numbered_domains:
+          - format: "cdn{n}.example"
+            start: 1
+            end: 2
+  - type: IP-CIDR
+    value: 192.0.2.0/24

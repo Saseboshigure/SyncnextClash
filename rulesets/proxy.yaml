@@ -1,0 +1,46 @@
+schema_version: 1
+name: proxy
+policy: proxy
+rules:
+  - type: DOMAIN-SUFFIX
+    value: v1.ax
+  - type: DOMAIN-SUFFIX
+    value: notion-api.splitbee.io
+  - type: DOMAIN-SUFFIX
+    value: themoviedb.org
+  - type: DOMAIN-SUFFIX
+    value: thetvdb.com
+  - type: DOMAIN-SUFFIX
+    value: tmdb.org
+  - type: DOMAIN-SUFFIX
+    value: discord.com
+  - type: DOMAIN-SUFFIX
+    value: olevod.com
+  - type: DOMAIN-SUFFIX
+    value: olevod.tv
+  - type: DOMAIN-SUFFIX
+    value: olemovienews.com
+  - type: DOMAIN-SUFFIX
+    value: haiwaikan.com
+  - type: DOMAIN-SUFFIX
+    value: picsum.photos
+  - type: DOMAIN-SUFFIX
+    value: ibb.co
+  - type: DOMAIN-SUFFIX
+    value: scrapingbee.com
+  - type: DOMAIN-SUFFIX
+    value: nivod.tv
+  - type: DOMAIN-SUFFIX
+    value: nivodz.com
+  - type: DOMAIN-SUFFIX
+    value: histar.tv
+  - type: DOMAIN-SUFFIX
+    value: youtubekit-remote.losjet.com
+  - type: DOMAIN-SUFFIX
+    value: vercel.app
+  - type: DOMAIN-SUFFIX
+    value: thanju.com
+  - type: DOMAIN-SUFFIX
+    value: ddys.app
+  - type: DOMAIN-SUFFIX
+    value: xlys02.com
