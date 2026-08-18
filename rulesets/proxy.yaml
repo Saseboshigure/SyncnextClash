@@ -44,3 +44,5 @@ rules:
     value: ddys.app
   - type: DOMAIN-SUFFIX
     value: xlys02.com
+  - type: DOMAIN-SUFFIX
+    value: workers.dev
