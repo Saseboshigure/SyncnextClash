@@ -6,6 +6,9 @@ host-suffix, tmdb.org, proxy
 host-suffix, discord.com, proxy
 host-suffix, olevod.com, proxy
 host-suffix, olevod.tv, proxy
+host-suffix, olelive.com, proxy
+host-suffix, yuntongclouds.com, proxy
+host-suffix, oulehdtv.tv, proxy
 host-suffix, olemovienews.com, proxy
 host-suffix, haiwaikan.com, proxy
 host-suffix, picsum.photos, proxy
@@ -20,3 +23,5 @@ host-suffix, thanju.com, proxy
 host-suffix, ddys.app, proxy
 host-suffix, xlys02.com, proxy
 host-suffix, workers.dev, proxy
+host-suffix, m.hkybqufgh.com, proxy
+host-suffix, v.fengbao14.com, proxy
